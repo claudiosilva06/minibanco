@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import br.com.claudio.minibanco.dto.ValorRequest;
 
 @RestController
 @RequestMapping("/contas")
@@ -31,4 +32,28 @@ public class ContaController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PostMapping("/{id}/deposito")
+    public ResponseEntity<Conta> depositar(@PathVariable Long id,
+                                           @RequestBody @Valid ValorRequest request) {
+        return contaRepository.findById(id)
+                .map(conta -> {
+                    conta.depositar(request.valor());
+                    return ResponseEntity.ok(contaRepository.save(conta));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{id}/saque")
+    public ResponseEntity<Conta> sacar(@PathVariable Long id,
+                                       @RequestBody @Valid ValorRequest request) {
+        return contaRepository.findById(id)
+                .map(conta -> {
+                    conta.sacar(request.valor());
+                    return ResponseEntity.ok(contaRepository.save(conta));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 }

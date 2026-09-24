@@ -37,4 +37,24 @@ public class Conta {
         return saldo;
     }
 
+
+    public void depositar(BigDecimal valor) {
+        validarValor(valor);
+        this.saldo = this.saldo.add(valor);
+    }
+
+    public void sacar(BigDecimal valor) {
+        validarValor(valor);
+        if (this.saldo.compareTo(valor) < 0) {
+            throw new IllegalStateException("Saldo insuficiente");
+        }
+        this.saldo = this.saldo.subtract(valor);
+    }
+
+    private void validarValor(BigDecimal valor) {
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor deve ser maior que zero");
+        }
+    }
+
 }
