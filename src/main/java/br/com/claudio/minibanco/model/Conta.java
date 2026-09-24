@@ -1,5 +1,6 @@
 package br.com.claudio.minibanco.model;
 
+import br.com.claudio.minibanco.exception.SaldoInsuficienteException;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -46,7 +47,7 @@ public class Conta {
     public void sacar(BigDecimal valor) {
         validarValor(valor);
         if (this.saldo.compareTo(valor) < 0) {
-            throw new IllegalStateException("Saldo insuficiente");
+            throw new SaldoInsuficienteException();
         }
         this.saldo = this.saldo.subtract(valor);
     }
