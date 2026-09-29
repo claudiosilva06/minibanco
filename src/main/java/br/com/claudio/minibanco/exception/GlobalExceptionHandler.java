@@ -25,4 +25,11 @@ public class GlobalExceptionHandler {
         String mensagem = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
         return ResponseEntity.badRequest().body(Map.of("erro", mensagem));
     }
+
+
+    @ExceptionHandler(ContaNaoEncontradaException.class)
+    public ResponseEntity<Map<String, String>> tratarContaNaoEncontrada(ContaNaoEncontradaException e) {
+        return ResponseEntity.status(404).body(Map.of("erro", e.getMessage()));
+    }
+
 }
