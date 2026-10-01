@@ -1,22 +1,28 @@
 package br.com.claudio.minibanco.controller;
 
 import br.com.claudio.minibanco.dto.CriarContaRequest;
+import br.com.claudio.minibanco.dto.ValorRequest;
 import br.com.claudio.minibanco.model.Conta;
+import br.com.claudio.minibanco.model.Movimentacao;
 import br.com.claudio.minibanco.repository.ContaRepository;
+import br.com.claudio.minibanco.service.ContaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import br.com.claudio.minibanco.dto.ValorRequest;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/contas")
 public class ContaController {
 
     private final ContaRepository contaRepository;
+    private final ContaService contaService;
 
-    public ContaController(ContaRepository contaRepository) {
+    public ContaController(ContaRepository contaRepository, ContaService contaService) {
         this.contaRepository = contaRepository;
+        this.contaService = contaService;
     }
 
     @PostMapping
@@ -36,24 +42,17 @@ public class ContaController {
     @PostMapping("/{id}/deposito")
     public ResponseEntity<Conta> depositar(@PathVariable Long id,
                                            @RequestBody @Valid ValorRequest request) {
-        return contaRepository.findById(id)
-                .map(conta -> {
-                    conta.depositar(request.valor());
-                    return ResponseEntity.ok(contaRepository.save(conta));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(contaService.depositar(id, request.valor()));
     }
 
     @PostMapping("/{id}/saque")
     public ResponseEntity<Conta> sacar(@PathVariable Long id,
                                        @RequestBody @Valid ValorRequest request) {
-        return contaRepository.findById(id)
-                .map(conta -> {
-                    conta.sacar(request.valor());
-                    return ResponseEntity.ok(contaRepository.save(conta));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(contaService.sacar(id, request.valor()));
     }
 
-
+    @GetMapping("/{id}/extrato")
+    public ResponseEntity<List<Movimentacao>> extrato(@PathVariable Long id) {
+        return ResponseEntity.ok(contaService.extrato(id));
+    }
 }

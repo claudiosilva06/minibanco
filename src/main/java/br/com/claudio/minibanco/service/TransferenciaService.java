@@ -2,7 +2,10 @@ package br.com.claudio.minibanco.service;
 
 import br.com.claudio.minibanco.exception.ContaNaoEncontradaException;
 import br.com.claudio.minibanco.model.Conta;
+import br.com.claudio.minibanco.model.Movimentacao;
+import br.com.claudio.minibanco.model.TipoMovimentacao;
 import br.com.claudio.minibanco.repository.ContaRepository;
+import br.com.claudio.minibanco.repository.MovimentacaoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +15,12 @@ import java.math.BigDecimal;
 public class TransferenciaService {
 
     private final ContaRepository contaRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
 
-    public TransferenciaService(ContaRepository contaRepository) {
+    public TransferenciaService(ContaRepository contaRepository,
+                                MovimentacaoRepository movimentacaoRepository) {
         this.contaRepository = contaRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
     }
 
     @Transactional
@@ -30,5 +36,8 @@ public class TransferenciaService {
 
         origem.sacar(valor);
         destino.depositar(valor);
+
+        movimentacaoRepository.save(new Movimentacao(origem, TipoMovimentacao.TRANSFERENCIA_ENVIADA, valor));
+        movimentacaoRepository.save(new Movimentacao(destino, TipoMovimentacao.TRANSFERENCIA_RECEBIDA, valor));
     }
 }
