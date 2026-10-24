@@ -6,11 +6,12 @@ import br.com.claudio.minibanco.model.Movimentacao;
 import br.com.claudio.minibanco.model.TipoMovimentacao;
 import br.com.claudio.minibanco.repository.ContaRepository;
 import br.com.claudio.minibanco.repository.MovimentacaoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class ContaService {
@@ -22,6 +23,17 @@ public class ContaService {
                         MovimentacaoRepository movimentacaoRepository) {
         this.contaRepository = contaRepository;
         this.movimentacaoRepository = movimentacaoRepository;
+    }
+
+    @Transactional
+    public Conta criar(String titular) {
+        return contaRepository.save(new Conta(titular));
+    }
+
+    @Transactional(readOnly = true)
+    public Conta buscar(Long contaId) {
+        return contaRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontradaException(contaId));
     }
 
     @Transactional
@@ -41,13 +53,8 @@ public class ContaService {
     }
 
     @Transactional(readOnly = true)
-    public List<Movimentacao> extrato(Long contaId) {
+    public Page<Movimentacao> extrato(Long contaId, Pageable pageable) {
         buscar(contaId);
-        return movimentacaoRepository.findByContaIdOrderByDataHoraDesc(contaId);
-    }
-
-    private Conta buscar(Long contaId) {
-        return contaRepository.findById(contaId)
-                .orElseThrow(() -> new ContaNaoEncontradaException(contaId));
+        return movimentacaoRepository.findByContaId(contaId, pageable);
     }
 }

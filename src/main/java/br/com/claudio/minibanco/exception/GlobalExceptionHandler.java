@@ -1,6 +1,7 @@
 package br.com.claudio.minibanco.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,6 +27,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("erro", mensagem));
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> tratarCorpoInvalido(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest().body(Map.of("erro", "Corpo da requisição inválido"));
+    }
 
     @ExceptionHandler(ContaNaoEncontradaException.class)
     public ResponseEntity<Map<String, String>> tratarContaNaoEncontrada(ContaNaoEncontradaException e) {
