@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -27,5 +28,14 @@ class DocumentacaoApiTest {
                 .andExpect(jsonPath("$.paths['/transferencias']").exists())
                 .andExpect(jsonPath("$.paths['/contas/{contaId}/chaves-pix']").exists())
                 .andExpect(jsonPath("$.paths['/pix']").exists());
+    }
+
+    @Test
+    void enderecosCurtosDevemLevarAoSwagger() throws Exception {
+        for (String endereco : new String[]{"/", "/minibancoclaudioassis", "/minibancoclaudioassis/"}) {
+            mockMvc.perform(get(endereco))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/minibancoclaudioassis/swagger-ui.html"));
+        }
     }
 }

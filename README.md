@@ -34,7 +34,7 @@ tratamento de erros padronizado, documentação Swagger e testes automatizados.
 | POST | `/pix` | Faz um Pix para uma chave e devolve o comprovante | 200 OK |
 
 A documentação interativa, onde dá para testar todas as rotas, fica em
-`http://localhost:8080/swagger-ui.html` com a API rodando.
+`http://localhost:8080/minibancoclaudioassis` com a API rodando.
 
 ### Exemplos de requisição
 
@@ -162,7 +162,7 @@ cd minibanco
 ./mvnw spring-boot:run
 ```
 
-A API sobe em `http://localhost:8080` e o Swagger em `http://localhost:8080/swagger-ui.html`.
+A API sobe em `http://localhost:8080` e o Swagger em `http://localhost:8080/minibancoclaudioassis`.
 No Windows, use `mvnw.cmd` no lugar de `./mvnw`.
 
 Para rodar os testes:
