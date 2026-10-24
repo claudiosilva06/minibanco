@@ -16,11 +16,14 @@ public class TransferenciaService {
 
     private final ContaRepository contaRepository;
     private final MovimentacaoRepository movimentacaoRepository;
+    private final LimiteDiarioService limiteDiarioService;
 
     public TransferenciaService(ContaRepository contaRepository,
-                                MovimentacaoRepository movimentacaoRepository) {
+                                MovimentacaoRepository movimentacaoRepository,
+                                LimiteDiarioService limiteDiarioService) {
         this.contaRepository = contaRepository;
         this.movimentacaoRepository = movimentacaoRepository;
+        this.limiteDiarioService = limiteDiarioService;
     }
 
     @Transactional
@@ -29,15 +32,23 @@ public class TransferenciaService {
             throw new IllegalArgumentException("Não é possível transferir para a mesma conta");
         }
 
-        Conta origem = contaRepository.findById(origemId)
-                .orElseThrow(() -> new ContaNaoEncontradaException(origemId));
-        Conta destino = contaRepository.findById(destinoId)
-                .orElseThrow(() -> new ContaNaoEncontradaException(destinoId));
+        // As contas são travadas sempre na mesma ordem (menor id primeiro). Assim, duas
+        // transferências cruzadas (A -> B e B -> A) não ficam esperando uma pela outra (deadlock).
+        Conta primeira = travar(Math.min(origemId, destinoId));
+        Conta segunda = travar(Math.max(origemId, destinoId));
+        Conta origem = primeira.getId().equals(origemId) ? primeira : segunda;
+        Conta destino = origem == primeira ? segunda : primeira;
 
+        limiteDiarioService.validar(origemId, valor);
         origem.sacar(valor);
         destino.depositar(valor);
 
         movimentacaoRepository.save(new Movimentacao(origem, TipoMovimentacao.TRANSFERENCIA_ENVIADA, valor));
         movimentacaoRepository.save(new Movimentacao(destino, TipoMovimentacao.TRANSFERENCIA_RECEBIDA, valor));
+    }
+
+    private Conta travar(Long contaId) {
+        return contaRepository.findByIdParaAtualizacao(contaId)
+                .orElseThrow(() -> new ContaNaoEncontradaException(contaId));
     }
 }

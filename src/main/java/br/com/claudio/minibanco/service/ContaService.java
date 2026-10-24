@@ -18,11 +18,14 @@ public class ContaService {
 
     private final ContaRepository contaRepository;
     private final MovimentacaoRepository movimentacaoRepository;
+    private final LimiteDiarioService limiteDiarioService;
 
     public ContaService(ContaRepository contaRepository,
-                        MovimentacaoRepository movimentacaoRepository) {
+                        MovimentacaoRepository movimentacaoRepository,
+                        LimiteDiarioService limiteDiarioService) {
         this.contaRepository = contaRepository;
         this.movimentacaoRepository = movimentacaoRepository;
+        this.limiteDiarioService = limiteDiarioService;
     }
 
     @Transactional
@@ -38,7 +41,7 @@ public class ContaService {
 
     @Transactional
     public Conta depositar(Long contaId, BigDecimal valor) {
-        Conta conta = buscar(contaId);
+        Conta conta = buscarParaAtualizacao(contaId);
         conta.depositar(valor);
         movimentacaoRepository.save(new Movimentacao(conta, TipoMovimentacao.DEPOSITO, valor));
         return conta;
@@ -46,7 +49,8 @@ public class ContaService {
 
     @Transactional
     public Conta sacar(Long contaId, BigDecimal valor) {
-        Conta conta = buscar(contaId);
+        Conta conta = buscarParaAtualizacao(contaId);
+        limiteDiarioService.validar(contaId, valor);
         conta.sacar(valor);
         movimentacaoRepository.save(new Movimentacao(conta, TipoMovimentacao.SAQUE, valor));
         return conta;
@@ -56,5 +60,10 @@ public class ContaService {
     public Page<Movimentacao> extrato(Long contaId, Pageable pageable) {
         buscar(contaId);
         return movimentacaoRepository.findByContaId(contaId, pageable);
+    }
+
+    private Conta buscarParaAtualizacao(Long contaId) {
+        return contaRepository.findByIdParaAtualizacao(contaId)
+                .orElseThrow(() -> new ContaNaoEncontradaException(contaId));
     }
 }

@@ -16,6 +16,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(422).body(Map.of("erro", e.getMessage()));
     }
 
+    @ExceptionHandler(LimiteDiarioExcedidoException.class)
+    public ResponseEntity<Map<String, String>> tratarLimiteDiario(LimiteDiarioExcedidoException e) {
+        return ResponseEntity.status(422).body(Map.of("erro", e.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> tratarValorInvalido(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
