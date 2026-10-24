@@ -20,7 +20,8 @@ public class LimiteDiarioService {
 
     private static final Set<TipoMovimentacao> SAIDAS = EnumSet.of(
             TipoMovimentacao.SAQUE,
-            TipoMovimentacao.TRANSFERENCIA_ENVIADA);
+            TipoMovimentacao.TRANSFERENCIA_ENVIADA,
+            TipoMovimentacao.PIX_ENVIADO);
 
     private final MovimentacaoRepository movimentacaoRepository;
     private final BigDecimal limite;

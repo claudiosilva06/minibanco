@@ -1,5 +1,6 @@
 package br.com.claudio.minibanco.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -37,9 +38,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("erro", "Corpo da requisição inválido"));
     }
 
-    @ExceptionHandler(ContaNaoEncontradaException.class)
-    public ResponseEntity<Map<String, String>> tratarContaNaoEncontrada(ContaNaoEncontradaException e) {
+    @ExceptionHandler({ContaNaoEncontradaException.class, ChavePixNaoEncontradaException.class})
+    public ResponseEntity<Map<String, String>> tratarNaoEncontrado(RuntimeException e) {
         return ResponseEntity.status(404).body(Map.of("erro", e.getMessage()));
+    }
+
+    @ExceptionHandler(ChavePixJaCadastradaException.class)
+    public ResponseEntity<Map<String, String>> tratarChaveDuplicada(ChavePixJaCadastradaException e) {
+        return ResponseEntity.status(409).body(Map.of("erro", e.getMessage()));
+    }
+
+    @ExceptionHandler(LimiteDeChavesPixException.class)
+    public ResponseEntity<Map<String, String>> tratarLimiteDeChaves(LimiteDeChavesPixException e) {
+        return ResponseEntity.status(422).body(Map.of("erro", e.getMessage()));
+    }
+
+    // Duas requisições cadastrando a mesma chave ao mesmo tempo: a segunda esbarra na restrição unique.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> tratarConflito(DataIntegrityViolationException e) {
+        return ResponseEntity.status(409).body(Map.of("erro", "O registro conflita com um dado já existente"));
     }
 
 }

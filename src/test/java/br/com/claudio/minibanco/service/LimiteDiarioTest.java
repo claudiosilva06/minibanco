@@ -1,7 +1,9 @@
 package br.com.claudio.minibanco.service;
 
 import br.com.claudio.minibanco.exception.LimiteDiarioExcedidoException;
+import br.com.claudio.minibanco.model.ChavePix;
 import br.com.claudio.minibanco.model.Conta;
+import br.com.claudio.minibanco.model.TipoChavePix;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,9 @@ class LimiteDiarioTest {
 
     @Autowired
     private TransferenciaService transferenciaService;
+
+    @Autowired
+    private PixService pixService;
 
     @Test
     void devePermitirSaquesAteOLimite() {
@@ -56,6 +61,18 @@ class LimiteDiarioTest {
 
         assertThat(saldoDe(origem)).isEqualByComparingTo("550");
         assertThat(saldoDe(destino)).isEqualByComparingTo("450");
+    }
+
+    @Test
+    void pixEnviadoContaNoLimite() {
+        Conta pagador = contaComSaldo("1000");
+        Conta recebedor = contaService.criar("Ana");
+        ChavePix chave = pixService.cadastrarChave(recebedor.getId(), TipoChavePix.ALEATORIA, null);
+        pixService.pagar(pagador.getId(), chave.getChave(), new BigDecimal("500"));
+
+        assertThatThrownBy(() -> contaService.sacar(pagador.getId(), new BigDecimal("0.01")))
+                .isInstanceOf(LimiteDiarioExcedidoException.class)
+                .hasMessage("Limite diário de saídas excedido. Disponível hoje: R$ 0.00");
     }
 
     @Test

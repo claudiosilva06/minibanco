@@ -28,6 +28,19 @@ public class TransferenciaService {
 
     @Transactional
     public void transferir(Long origemId, Long destinoId, BigDecimal valor) {
+        transferir(origemId, destinoId, valor,
+                TipoMovimentacao.TRANSFERENCIA_ENVIADA, TipoMovimentacao.TRANSFERENCIA_RECEBIDA);
+    }
+
+    /**
+     * Move o dinheiro entre as contas e registra uma movimentação em cada uma.
+     * Usado também pelo Pix, que muda apenas o tipo das movimentações.
+     *
+     * @return a movimentação registrada na conta de origem
+     */
+    @Transactional
+    Movimentacao transferir(Long origemId, Long destinoId, BigDecimal valor,
+                            TipoMovimentacao tipoEnvio, TipoMovimentacao tipoRecebimento) {
         if (origemId.equals(destinoId)) {
             throw new IllegalArgumentException("Não é possível transferir para a mesma conta");
         }
@@ -43,8 +56,8 @@ public class TransferenciaService {
         origem.sacar(valor);
         destino.depositar(valor);
 
-        movimentacaoRepository.save(new Movimentacao(origem, TipoMovimentacao.TRANSFERENCIA_ENVIADA, valor));
-        movimentacaoRepository.save(new Movimentacao(destino, TipoMovimentacao.TRANSFERENCIA_RECEBIDA, valor));
+        movimentacaoRepository.save(new Movimentacao(destino, tipoRecebimento, valor));
+        return movimentacaoRepository.save(new Movimentacao(origem, tipoEnvio, valor));
     }
 
     private Conta travar(Long contaId) {
